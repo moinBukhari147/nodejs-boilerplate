@@ -1,0 +1,25 @@
+# Server Configuration
+# --------------------
+DOMAIN = https://yourdomain.com
+PORT=3000
+
+# Database Configuration
+# ----------------------
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/
+DATABASE_NAME=dbname
+
+# Authentication and Security Configuration
+# -----------------------------------------
+JWT_SECRET_KEY=jwt_setret_key_string
+
+# Email Configuration
+# -------------------
+EMAIL= mail@gmail.com
+EMAIL_PASS = password
+
+# Social Authentication Configuration
+# -----------------------------------
+GOOGLE_CLIENT_ID = google_client_id
+GOOGLE_CLIENT_SECRET= google_client_secret
+FACEBOOK_CLIENT_ID = facebook_app_id
+FACEBOOK_CLIENT_SECRET= facebook_app_secret
