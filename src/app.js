@@ -10,6 +10,8 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
 import os from "os"
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 // =========================================
 //             Code Import
@@ -57,6 +59,11 @@ app.use(limiter);
 // Built-in middleware for parsing JSON
 app.use(express.json());
 
+// static directories
+// Convert import.meta.url to a file path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/static', express.static(path.join(__dirname, '..', 'static')));
 
 // =========================================
 //            Routes
