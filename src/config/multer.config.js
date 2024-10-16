@@ -16,7 +16,7 @@ const createDirectoryIfNotExists = (directory) => {
 const storage = diskStorage({
 
     destination: (req, file, cb) => {
-        const destinationPath = resolve(`${req.storagePath}`);    // we have to create a middleware for each different path pattrens and Add it before this middleware ====IMP
+        const destinationPath = resolve(`${req.storagePath}`);    // ====IMP===== we have to create a middleware for each different path pattrens and Add it before this middleware ====IMP
         // Create directory if it doesn't exist
         createDirectoryIfNotExists(destinationPath);
 

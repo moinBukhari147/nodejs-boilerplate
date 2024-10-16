@@ -47,3 +47,7 @@ Thumbs.db
 # Miscellaneous
 .node_repl_history
 .vscode-test
+
+# Static folder
+static/
+public/

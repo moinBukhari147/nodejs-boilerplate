@@ -39,15 +39,8 @@ const createdWithData = (res, message, data) => {
 };
 
 // ================================================================
-// ======================= error responses ========================
+// ======================= error 400 responses ========================
 // ================================================================
-
-// ========================= catchError ===========================
-const catchError = (res, error) => {
-    return res.status(500).send({
-        message: error.message || "Internal server error",
-    });
-};
 
 // ======================== validationError =======================
 
@@ -60,13 +53,6 @@ const validationError = (res, message, field) => {
     });
 };
 
-// ======================== sequlizeValidationError =======================
-
-const sequlizeValidationError = (res, error) => {
-    const errorMessage = error.errors[0].message;
-    const key = error.errors[0].path
-    return validationError(res, errorMessage, key);
-};
 
 // ========================= frontError ===========================
 
@@ -127,20 +113,72 @@ const conflictError = (res, message) => {
     });
 };
 
+// ======================== sequelizeValidationError =======================
+
+const sequelizeValidationError = (res, error) => {
+    const errorMessage = error.errors[0].message;
+    const key = error.errors[0].path
+    return validationError(res, errorMessage, key);
+};
+
+// ======================== sequelizeValidationError =======================
+
+const sequlizeFrontError = (res, error) => {
+    const errorMessage = error.errors[0].message;
+    const key = error.errors[0].path
+    return frontError(res, errorMessage, key);
+};
+
 // ================================================================
+// ======================= error 500 responses ========================
+// ================================================================
+
+// ========================= catchError ===========================
+const catchError = (res, error) => {
+    return res.status(500).send({
+        message: error.message || "Internal server error",
+    });
+};
+
+
+// ========================= catchWithSequelizeFrontError ===========================
+
+const catchWithSequelizeFrontError = (res, error) => {
+    if (error instanceof Sequelize.ValidationError) return sequlizeFrontError(res, error);
+    if (error.errors && error.errors[0].errors instanceof Sequelize.ValidationError) return frontError(res, error.errors[0].message)
+    if (error.name === 'SequelizeForeignKeyConstraintError') return frontError(res, "Fogreign key voilates. Making a relation with value that not exit.", error.parent?.constraint);
+    if (error.name === 'SequelizeDatabaseError') return frontError(res, error.message, "database");
+    return catchError(res, error);
+};
+
+
+// ========================= catchWithSequelizeValidationError ===========================
+
+const catchWithSequelizeValidationError = (res, error) => {
+    if (error instanceof Sequelize.ValidationError) return sequelizeValidationError(res, error);
+    if (error.errors && error.errors[0].errors instanceof Sequelize.ValidationError) return sequelizeValidationError(res, error)
+    if (error.name === 'SequelizeForeignKeyConstraintError') return validationError(res, "Selecting or seding a value that not exits.", "foreign_key");
+    if (error.name === 'SequelizeDatabaseError') return validationError(res, error.message);
+    return catchError(res, error);
+};
+
+
 
 export {
     successOk,
     successOkWithData,
     created,
     createdWithData,
-    catchError,
     validationError,
-    sequlizeValidationError,
     frontError,
     backError,
     notFound,
     conflictError,
     UnauthorizedError,
-    forbiddenError
+    forbiddenError,
+    sequelizeValidationError,
+    sequlizeFrontError,
+    catchError,
+    catchWithSequelizeFrontError,
+    catchWithSequelizeValidationError
 };
