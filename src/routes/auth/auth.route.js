@@ -1,22 +1,22 @@
 // Import required modules and configuration
 import express from "express";
-import { loginUser, registerUser, forgotPassword, verifyOtp, setNewPassword, regenerateAccessToken, updatePassword } from "../../controllers/auth/auth.controller.js";
+import * as authCtrl from "../../controllers/auth/auth.controller.js";
 import verifyToken from "../../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/signup", registerUser);
+router.post("/signup", authCtrl.registerUser);
 
-router.post("/login", loginUser);
+router.post("/login", authCtrl.loginUser);
 
-router.post("/regenerate-access-token", regenerateAccessToken);
+router.post("/regenerate-access-token", authCtrl.regenerateAccessToken);
 
-router.post("/password/update", verifyToken, updatePassword);
+router.post("/password/update", verifyToken, authCtrl.updatePassword);
 
-router.post("/password/forgot", verifyToken, forgotPassword);
+router.post("/password/forgot", authCtrl.forgotPassword);
 
-router.post("/password/verify-otp", verifyToken, verifyOtp);
+router.post("/password/verify-otp", authCtrl.verifyOtp);
 
-router.post("/password/reset", verifyToken, setNewPassword);
+router.post("/password/reset", authCtrl.setNewPassword);
 
 export default router;

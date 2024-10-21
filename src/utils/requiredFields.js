@@ -5,7 +5,7 @@ import { frontError } from "./responses.js"
 const queryReqFields = (req, res, field_list) => {
     let resObj = {};
     for (const field of field_list) {
-        if (!req.query[field] || (typeof (req.query[field]) == 'string' && req.query[field].trim() == '') || req.query[field] == 'null') {
+        if (req.query[field] === undefined || (typeof (req.query[field]) == 'string' && req.query[field].trim() == '') || req.query[field] == 'null') {
             resObj[[field]] = "This field is required in query params.";
         }
     }
@@ -19,7 +19,7 @@ const queryReqFields = (req, res, field_list) => {
 const bodyReqFields = (req, res, field_list) => {
     let resObj = {};
     for (const field of field_list) {
-        if (!req.body[field] || (typeof (req.body[field]) == 'string' && req.body[field].trim() == '') || req.body[field] == 'null') {
+        if (req.body[field] === undefined || (typeof (req.body[field]) == 'string' && req.body[field].trim() == '') || req.body[field] == 'null') {
             resObj[[field]] = "This field is required.";
         }
     }

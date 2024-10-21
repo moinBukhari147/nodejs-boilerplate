@@ -9,7 +9,7 @@ import { Sequelize } from "sequelize";
 // ========================================
 //         CODE IMPORTS
 // ========================================
-import User from "../../models/user/user.model.js";
+import User from "../../models/auth/user.model.js";
 import { bodyReqFields } from "../../utils/requiredFields.js"
 import { convertToLowercase, validateEmail } from '../../utils/utils.js';
 import { comparePassword, hashPassword, validatePassword } from "../../utils/passwordUtils.js";
@@ -23,11 +23,8 @@ import {
   successOk,
   successOkWithData,
   UnauthorizedError,
-  sequlizeValidationError
+  sequelizeValidationError
 } from "../../utils/responses.js";
-
-// ========================= nodemailer configuration ===========================
-
 
 
 
@@ -62,7 +59,7 @@ export async function registerUser(req, res) {
       }
     });
 
-    if (user) return validationError(res, "", "User already exists");
+    if (user) return validationError(res, "User already exists",);
 
     const invalidEmail = validateEmail(email)
     if (invalidEmail) return validationError(res, invalidEmail)
@@ -84,7 +81,7 @@ export async function registerUser(req, res) {
 
     return created(res, "User created successfully")
   } catch (error) {
-    if (error instanceof Sequelize.ValidationError) return sequlizeValidationError(res, error);
+    if (error instanceof Sequelize.ValidationError) return sequelizeValidationError(res, error);
     else return catchError(res, error);
   }
 }
