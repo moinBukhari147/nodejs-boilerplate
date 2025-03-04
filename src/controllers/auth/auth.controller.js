@@ -270,7 +270,7 @@ export async function setNewPassword(req, res) {
     // Check if a user with the given email exists
     const user = await User.findOne({ where: { email: email } });
     if (!user) {
-      return frontError(res, "user not found")
+      return frontError(res, "User with this email does not exist. Invalid email.");
     }
 
     // Check if passwords match

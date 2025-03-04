@@ -1,4 +1,4 @@
-import { frontError } from "./responses.js"
+import { frontErrorObj } from "./responses.js"
 
 // ================== queryReqFields =======================
 // This function checks if the required fields are present in the query string.
@@ -10,7 +10,7 @@ const queryReqFields = (req, res, field_list) => {
         }
     }
     if (Object.keys(resObj).length !== 0)
-        return { error: true, response: frontError(res, "Missing query required fields.", resObj) };
+        return { error: true, response: frontErrorObj(res, resObj) };
     else return { error: false, response: {} };
 };
 
@@ -24,7 +24,7 @@ const bodyReqFields = (req, res, field_list) => {
         }
     }
     if (Object.keys(resObj).length !== 0)
-        return { error: true, response: frontError(res, "Missing body required fields.", resObj) };
+        return { error: true, response: frontErrorObj(res, resObj) };
     else return { error: false, response: {} };
 };
 

@@ -4,38 +4,38 @@ import Sequelize from 'sequelize';
 // ===================== success responses ========================
 // ================================================================
 
-const successOk = (res, message) => {
+const successOk = (res, message = "Request processed successfully.") => {
     return res.status(200).send({
         success: true,
-        message: message,
+        message,
     });
 };
 
 // ===================== successOkWithData ========================
 
-const successOkWithData = (res, message, data) => {
+const successOkWithData = (res, data, message = "Request processed successfully.") => {
     return res.status(200).send({
         success: true,
-        message: message,
+        message,
         data: data,
     });
 };
 
 // =========================== created ============================
 
-const created = (res, message) => {
+const created = (res, message = "Resource created successfully.") => {
     return res.status(201).send({
         success: true,
-        message: message,
+        message,
     });
 };
 
 // ======================= createdWithData ========================
 
-const createdWithData = (res, message, data) => {
+const createdWithData = (res, data, message = "Resource created successfully.") => {
     return res.status(201).send({
         success: true,
-        message: message,
+        message,
         data: data,
     });
 };
@@ -46,74 +46,107 @@ const createdWithData = (res, message, data) => {
 
 // ======================== validationError =======================
 
-const validationError = (res, message, field) => {
+const validationError = (res, message, key = "message") => {
     return res.status(400).send({
         success: false,
-        error: "user",
-        field: field,
-        message: message,
+        type: "user",
+        error: { [key]: message },
+    });
+};
+
+// ======================== validationErrorObj =======================
+// This will be used when we have to send multiple errors in response.
+const validationErrorObj = (res, errorObj) => {
+    return res.status(400).send({
+        success: false,
+        type: "user",
+        error: errorObj,
     });
 };
 
 
+
 // ========================= frontError ===========================
 
-const frontError = (res, message, field) => {
+const frontError = (res, message, key = "message") => {
     return res.status(400).send({
         success: false,
-        error: "frontend",
-        field: field,
-        message: message,
+        type: "frontend",
+        error: { [key]: message },
+    });
+};
+// ========================= frontErrorObj ===========================
+// This will be used when we have to send multiple errors in response.
+const frontErrorObj = (res, errorObj) => {
+    return res.status(400).send({
+        success: false,
+        type: "frontend",
+        error: errorObj,
     });
 };
 
 // ========================== backError ===========================
 // This will be used when we are calling the other external Api's from backend And facing an issue.
 
-const backError = (res, message, field) => {
+const backError = (res, message) => {
     return res.status(400).send({
         success: false,
-        error: "backend",
-        field: field,
-        message: message,
+        type: "backend",
+        error: { message },
     });
 };
 
-// ============================ authenticationError ==========================
+// ============================ UnauthorizedError ==========================
 
-const UnauthorizedError = (res, message) => {
+const UnauthorizedError = (res, message = 'Access denied. You are not authorized.') => {
     return res.status(401).json({
         success: false,
-        message: message || 'Unauthorized',
+        type: "user",
+        error: { message },
     });
 }
 
-// ============================ authenticationError ==========================
+// ============================ forbiddenError ==========================
 
-const forbiddenError = (res, message) => {
+const forbiddenError = (res, message = 'Forbidden, You do not have permission to access this resource.') => {
     return res.status(403).json({
         success: false,
-        message: message || 'Forbidden',
+        type: "user",
+        error: { message },
     });
 }
 
 // ============================ notFound ==========================
 
-const notFound = (res, message) => {
+const notFound = (res, message = 'Resource not found.') => {
     return res.status(404).send({
         success: false,
-        message: message,
+        type: "user",
+        error: { message },
     });
 };
 
 // ========================= conflictError ========================
 
-const conflictError = (res, message) => {
+const conflictError = (res, message = 'Conflict. Resource already exists.') => {
     return res.status(409).send({
         success: false,
-        message: message,
+        type: "user",
+        error: { message },
     });
 };
+
+// ========================= tooManyRequests ========================
+
+const tooManyRequestsError = (res, message = 'Too many requests. Please wait before trying again.') => {
+    const defaultError = {};
+    return res.status(429).send({
+        success: false,
+        type: "user",
+        error: message,
+    });
+};
+
 
 // ======================== sequelizeValidationError =======================
 
@@ -138,7 +171,9 @@ const sequlizeFrontError = (res, error) => {
 // ========================= catchError ===========================
 const catchError = (res, error) => {
     return res.status(500).send({
-        message: error.message || "Internal server error",
+        success: false,
+        type: "backend",
+        error: { message: 'Internal server error.' || error.message },
     });
 };
 
@@ -167,20 +202,23 @@ const catchWithSequelizeValidationError = (res, error) => {
 
 
 export {
-    successOk,
-    successOkWithData,
-    created,
-    createdWithData,
-    validationError,
-    frontError,
     backError,
-    notFound,
-    conflictError,
-    UnauthorizedError,
-    forbiddenError,
-    sequelizeValidationError,
-    sequlizeFrontError,
     catchError,
     catchWithSequelizeFrontError,
-    catchWithSequelizeValidationError
+    catchWithSequelizeValidationError,
+    created,
+    createdWithData,
+    conflictError,
+    frontError,
+    frontErrorObj,
+    forbiddenError,
+    notFound,
+    successOk,
+    successOkWithData,
+    sequlizeFrontError,
+    sequelizeValidationError,
+    tooManyRequestsError,
+    UnauthorizedError,
+    validationError,
+    validationErrorObj
 };

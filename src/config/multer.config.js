@@ -2,6 +2,7 @@ import multer from "multer";
 import { resolve } from 'path';
 import { mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
+import { backError } from "../utils/responses";
 
 // Function to create directory if it doesn't exist
 const createDirectoryIfNotExists = (directory) => {
@@ -9,7 +10,7 @@ const createDirectoryIfNotExists = (directory) => {
         mkdirSync(directory, { recursive: true });
     } catch (error) {
         console.error(`Error creating directory: ${error}`);
-        return frontError(res, `Error creating directory: ${error}`)
+        return backError(res, `Error creating directory: ${error}`)
     }
 };
 
