@@ -1,9 +1,35 @@
 // Import required modules and configuration
 import chalk from "chalk";
 import { Sequelize } from "sequelize";
-import { dbUrl } from "./initialConfig.js";
+import { dbUrl, nodeEnv } from "./initialConfig.js";
 
-const sequelize = new Sequelize(dbUrl);
+const sequelize = new Sequelize(dbUrl, {
+  dialect: "postgres",
+  define: { underscored: true },
+  // Environment-based logging (disable in production)
+  logging: nodeEnv !== "production"
+    ? (msg) => console.log(chalk.blue(msg))
+    : false,
+  retry: {
+    max: 3,
+    match: [
+      Sequelize.ConnectionError,
+      Sequelize.ConnectionRefusedError,
+      Sequelize.TimeoutError,
+      Sequelize.ConnectionAcquireTimeoutError,
+    ],
+  },
+  dialectOptions: {
+    connectTimeout: 60000,
+    timezone: "Asia/Karachi",
+  },
+  pool: {
+    max: 5,
+    min: 1,
+    acquire: 60000,
+    idle: 10000
+  }
+});
 // Async function to connect to the MongoDB database
 export const connectDB = async () => {
   try {
