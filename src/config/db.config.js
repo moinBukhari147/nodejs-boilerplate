@@ -1,7 +1,7 @@
 // Import required modules and configuration
 import chalk from "chalk";
 import { Sequelize } from "sequelize";
-import { dbUrl, nodeEnv } from "./initialConfig.js";
+import { dbUrl, nodeEnv } from "./initial.config.js";
 
 const sequelize = new Sequelize(dbUrl, {
   dialect: "postgres",

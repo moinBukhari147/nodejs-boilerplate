@@ -9,15 +9,14 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
-import os from "os"
 import { fileURLToPath } from 'url';
 import path from 'path';
 
 // =========================================
 //             Code Import
 // =========================================
-import { nodeEnv, port } from "./config/initialConfig.js";
-import { connectDB } from "./config/dbConfig.js";
+import { nodeEnv, port } from "./config/initial.config.js";
+import { connectDB } from "./config/db.config.js";
 import { getIPAddress } from "./utils/utils.js";
 import "./models/models.js";
 import authRoutes from "./routes/auth/auth.route.js";
@@ -85,11 +84,10 @@ app.use("/api/auth", authRoutes);
 // =========================================
 // Global error handler
 app.use((err, req, res, next) => {
+  if (err.code === "UNSUPPORTED_FILE_FORMAT") return validationError(res, err.message, err.field);
+  if (err.code === "LIMIT_FILE_SIZE") return validationError(res, "File size should not be greater than 10MB", err.field);
   console.error(chalk.red(err.stack));
-  res.status(err.status || 500).json({
-    message: err.message || "Internal Server Error",
-    error: {},
-  });
+  return catchError(res, err);
 });
 
 

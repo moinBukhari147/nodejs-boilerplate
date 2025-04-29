@@ -1,4 +1,4 @@
-import { transporter } from "../config/emailConfig.js";
+import { transporter } from "../config/email.config.js";
 
 
 

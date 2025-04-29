@@ -1,4 +1,4 @@
-import sequelize from '../../config/dbConfig.js';
+import sequelize from '../../config/db.config.js';
 import { DataTypes } from 'sequelize';
 import bcrypt from "bcryptjs"
 
@@ -34,7 +34,7 @@ const User = sequelize.define('user', {
         },
     },
     // use for email verification and password reset if needed
-    verified: {
+    is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
@@ -49,6 +49,7 @@ const User = sequelize.define('user', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+
 },
 )
 

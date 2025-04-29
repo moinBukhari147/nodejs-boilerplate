@@ -40,6 +40,8 @@ const createdWithData = (res, data, message = "Resource created successfully.") 
     });
 };
 
+
+
 // ================================================================
 // ======================= error 400 responses ========================
 // ================================================================
@@ -144,6 +146,16 @@ const tooManyRequestsError = (res, message = 'Too many requests. Please wait bef
         success: false,
         type: "user",
         error: message,
+    });
+};
+
+// ========================= paymentRequiredError ========================
+
+const paymentRequiredError = (res, message = 'Payment required to access this resource.') => {
+    return res.status(402).send({
+        success: false,
+        type: "user",
+        error: { message },
     });
 };
 

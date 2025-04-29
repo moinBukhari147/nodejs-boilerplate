@@ -106,3 +106,53 @@ export const getRelativePath = (fullPath) => {
     if (index === -1) return '';
     return normalizedPath.substring(index);
 }
+
+// =========================== calculateAge ===============================
+
+export const calculateAge = (dateOfBirth) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+// =========================== removeEmptyFields ===============================
+
+export const removeEmptyFields = (obj) => {
+    return Object.fromEntries(
+        Object.entries(obj).filter(([_, value]) => {
+            if (value === null || value === undefined) return false;
+            if (typeof value === 'string' && value.trim() === '') return false;
+            if (Array.isArray(value) && value.length === 0) return false;
+            if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) return false;
+            return true;
+        })
+    );
+}
+
+// ============================ extractFieldsToUpdate =================================
+
+export const extractFieldsToUpdate = (body, fields) => {
+    const fieldsToUpdate = {};
+    for (const field of fields) {
+        const value = body[field];
+        if (value !== undefined && value !== null && value !== "") {
+            fieldsToUpdate[field] = value;
+        }
+    }
+    return fieldsToUpdate;
+};
+
+// ============================ removeFieldsNotToUpdate =================================
+
+export const removeFieldsNotToUpdate = (body, fields) => {
+    let fieldsToUpdate = { ...body };
+    for (const field of fields) {
+        if (fieldsToUpdate.hasOwnProperty(field)) delete fieldsToUpdate[field];
+    }
+    return fieldsToUpdate;
+};

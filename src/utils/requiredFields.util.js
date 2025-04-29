@@ -1,4 +1,4 @@
-import { frontErrorObj } from "./responses.js"
+import { frontErrorObj } from "./response.util.js"
 
 // ================== queryReqFields =======================
 // This function checks if the required fields are present in the query string.

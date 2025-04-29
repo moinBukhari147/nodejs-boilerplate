@@ -2,19 +2,16 @@
 //           LIBRARIES IMPORTS
 // ========================================
 import crypto from "crypto"
-import bcrypt from "bcryptjs";
-import { Sequelize } from "sequelize";
-
 
 // ========================================
 //         CODE IMPORTS
 // ========================================
 import User from "../../models/auth/user.model.js";
-import { bodyReqFields } from "../../utils/requiredFields.js"
+import { bodyReqFields } from "../../utils/requiredFields.util.js"
 import { convertToLowercase, validateEmail } from '../../utils/utils.js';
-import { comparePassword, hashPassword, validatePassword } from "../../utils/passwordUtils.js";
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../utils/jwtTokenGenerator.js"
-import { sendOTPEmail } from "../../utils/sendEmailUtils.js";
+import { comparePassword, hashPassword, validatePassword } from "../../utils/password.util.js";
+import { generateAccessToken, generateRefreshToken } from "../../utils/jwt.util.js"
+import { sendOTPEmail } from "../../utils/email.util.js";
 import {
   created,
   frontError,
@@ -23,8 +20,12 @@ import {
   successOk,
   successOkWithData,
   UnauthorizedError,
-  sequelizeValidationError
-} from "../../utils/responses.js";
+  createdWithData,
+  catchWithSequelizeValidationError,
+  catchWithSequelizeFrontError
+} from "../../utils/response.util.js";
+import sequelize from "../../config/db.config.js";
+import e from "express";
 
 
 
@@ -48,18 +49,19 @@ export async function registerUser(req, res) {
     const excludedFields = ['password', 'confirmPassword', 'email'];
     const requiredData = convertToLowercase(req.body, excludedFields);
     const {
-      firstName, lastName, age, gender, email, password, confirmPassword, fcmToken
+      firstName, lastName, age, gender, email, password, confirmPassword
     } = requiredData;
 
 
     // Check if a user with the given email already exists
-    let user = await User.findOne({
+    let userExist = await User.findOne({
       where: {
         email: email
-      }
+      },
+      attributes: ['uuid']
     });
 
-    if (user) return validationError(res, "User already exists",);
+    if (userExist) return validationError(res, "User already exists",);
 
     const invalidEmail = validateEmail(email)
     if (invalidEmail) return validationError(res, invalidEmail)
@@ -74,17 +76,116 @@ export async function registerUser(req, res) {
       age,
       gender,
       email,
+      otp: crypto.randomInt(100099, 999990),
       password: await hashPassword(password)
     }
 
-    await User.create(userData)
-
-    return created(res, "User created successfully")
+    const user = await User.create(userData)
+    await sendOTPEmail(email, otp);
+    return createdWithData(res, user, "User created successfully")
   } catch (error) {
-    if (error instanceof Sequelize.ValidationError) return sequelizeValidationError(res, error);
-    else return catchError(res, error);
+    return catchWithSequelizeValidationError(res, error);
   }
 }
+
+
+// ========================= verifyOtp ===========================
+
+export const verifyOtp = async (req, res) => {
+  const { otp, uuid } = req.body;
+
+  const reqBodyFields = bodyReqFields(req, res, ["otp", "uuid"]);
+  if (reqBodyFields.error) return reqBodyFields.response;
+
+  const transaction = await sequelize.transaction();
+  try {
+    const user = await User.findOne({
+      where: {
+        uuid
+      },
+      attributes: ['uuid', 'email', 'otp', 'otpAttempt', 'isActive'],
+      lock: transaction.LOCK.UPDATE, // Equivalent to SELECT ... FOR UPDATE
+      transaction
+    });
+
+    if (!user) {
+      await transaction.rollback();
+      return frontError(res, "User not found. Invalid UUId.", "uuid");
+    }
+
+    if (!user.isActive) {
+      await transaction.rollback();
+      return conflictError(res, "User is already verfied.");
+    }
+
+    if (!user.otp) {
+      await transaction.rollback();
+      return validationError(res, "OTP is not sent to this number. Generate OTP first.");
+    }
+
+    if (user.otp !== otp) {
+      user.otpAttempt += 1;
+      if (user.otpAttempt > 2) {
+        user.otp = null;
+        user.otpAttempt = 0;
+        await user.save({ fields: ['otp', 'otpAttempt'], transaction });
+        await transaction.commit();
+        return validationError(res, "Maximum OTP attempts reached. Please regenerate OTP.");
+      } else {
+        await user.save({ fields: ['otpAttempt'], transaction });
+        await transaction.commit();
+        return validationError(res, "Invalid OTP. Please try again.", "otp");
+      }
+    }
+
+    user.isActive = true;
+    user.otp = null;
+    user.otpAttempt = 0;
+
+    await user.save({ fields: ['otp', 'otpAttempt', 'isActive'], transaction });
+    await transaction.commit();
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    return successOkWithData(res, { accessToken, refreshToken }, "User verified successfully");
+
+  } catch (error) {
+    await transaction.rollback();
+    return catchWithSequelizeFrontError(res, error);
+  }
+};
+
+// ========================= resendOtp ===========================
+
+export const resendOtp = async (req, res) => {
+  try {
+    const reqBodyFields = bodyReqFields(req, res, ["email"]);
+    if (reqBodyFields.error) return reqBodyFields.response;
+
+    const { email } = req.body;
+    const invalidEmail = validateEmail(email)
+    if (invalidEmail) return validationError(res, invalidEmail)
+
+    // Check if a user with the given email exists
+    const user = await User.findOne({ where: { email }, attributes: ["uuid", "otp", "otpAttempt"] });
+    if (!user) {
+      return frontError(res, "User not found. Invalid email.", "email");
+    }
+    const otp = crypto.randomInt(100099, 999990);
+    // Send OTP email
+    const otpSend = await sendOTPEmail(otp, email);
+    if (!otpSend) return validationError(res, "Otp service is down, Please try again in a while.");
+    user.otp = otp;
+    user.otpAttempt = 0;
+    await user.save({ fields: ['otp', 'otpAttempt'] });
+    return successOk(res, "OTP sent successfully");
+  } catch (error) {
+    return catchError(res, error);
+
+  }
+
+}
+
 
 // ========================= loginUser ===========================
 
@@ -96,11 +197,20 @@ export async function loginUser(req, res) {
     const { email, password } = req.body;
 
     // Check if a user with the given email exists
-    const user = await User.findOne({ where: { email: email } });
+    const user = await User.findOne({ where: { email: email }, attributes: ["isActive", "password"] });
     if (!user) {
       return validationError(res, "Invalid email or password")
     }
 
+    if (!user.isActive) {
+      user.otp = crypto.randomInt(100099, 999990);
+      user.otpAttempt = 0;
+      await user.save({ fields: ['otp', 'otpAttempt'] });
+      const otpSent = await sendOTPEmail(email, user.otp);
+      if (!otpSent) return validationError(res, "Otp service is down, and your account is not active, Please try again in a while.");
+
+      return validationError(res, "User is not verified. An OTP is send to your email, Please verify your email first.")
+    }
     // Compare passwords
     const isMatch = await comparePassword(password, user.password)
     if (!isMatch) {
@@ -112,7 +222,7 @@ export async function loginUser(req, res) {
     const refreshToken = generateRefreshToken(user);
 
     // If passwords match, return success
-    return successOkWithData(res, "Login successful", { accessToken, refreshToken });
+    return successOkWithData(res, { accessToken, refreshToken }, "Login successful");
   } catch (error) {
     return catchError(res, error);
   }
@@ -122,20 +232,60 @@ export async function loginUser(req, res) {
 
 export async function regenerateAccessToken(req, res) {
   try {
-    const reqBodyFields = bodyReqFields(req, res, ["refreshToken"]);
-    if (reqBodyFields.error) return reqBodyFields.response;
 
-    const { refreshToken } = req.body;
-    const { invalid, userUid } = verifyRefreshToken(refreshToken);
+    const user = await User.findOne({ where: { uuid: req.userUid } });
+    if (!user) return UnauthorizedError(res, "Invalid token");
+    const newAccessToken = generateAccessToken({ uuid: req.userUid });
 
-    if (invalid) return validationError(res, "Invalid refresh token");
-    const newAccessToken = generateAccessToken({ uuid: userUid });
-
-    return successOkWithData(res, "Access Token Generated Successfully", { accessToken: newAccessToken });
+    return successOkWithData(res, { accessToken: newAccessToken }, "Access Token Generated Successfully",);
   } catch (error) {
     return catchError(res, error);
   }
 };
+
+// ========================= getUser ===========================
+
+export const getUser = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: { uuid: req.userUid },
+      attributes: { exclude: ["password", "otp", "otpAttempt", "can_change_password"] },
+    });
+    if (!user) {
+      return UnauthorizedError(res, "Invalid token");
+    }
+    return successOkWithData(res, user, "User fetched successfully");
+  } catch (error) {
+
+    return catchError(res, error);
+
+  }
+}
+
+// ========================= updateUser ===========================
+
+export const updateUser = async (req, res) => {
+  try {
+    const { email, } = req.body;
+
+    const fieldsToUpdate = {};
+    if (email) {
+      const invalidEmail = validateEmail(email);
+      if (invalidEmail) return validationError(res, invalidEmail, "email");
+      fieldsToUpdate.email = email;
+    }
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      await User.update(fieldsToUpdate, {
+        where: { uuid: req.userUid }
+      });
+    }
+    return successOk(res, "User updated successfully");
+  } catch (error) {
+    return catchWithSequelizeValidationError(res, error);
+
+  }
+}
+
 
 // ========================= updatePassword ===========================
 
@@ -194,60 +344,67 @@ export async function forgotPassword(req, res) {
 
     // generating otp 
     const otp = crypto.randomInt(100099, 999990);
-    // const expiry = new Date();
-    // expiry.setSeconds(expiry.getSeconds() + 180);
 
     // Send OTP email
     const emailSent = await sendOTPEmail(email, otp);
-
-    if (emailSent) {
-      const otpData = {
-        otp,
-        otp_count: 0
-      }
-      // Save OTP in the database
-      await User.update(otpData, {
-        where: { email },
-      });
-      req.user = { email }
-      return successOk(res, "OTP sent successfully")
-    } else {
-      return catchError(res, "Something went wrong. Failed to send OTP.")
+    if (!emailSent) return validationError(res, "Otp service is down, Please try again in a while.");
+    const otpData = {
+      otp,
+      otp_count: 0
     }
+    // Save OTP in the database
+    await User.update(otpData, {
+      where: { email },
+    });
+    return successOk(res, "OTP sent successfully")
   } catch (error) {
     return catchError(res, error);
   }
 }
 
-// ========================= verifyOtp ===========================
+// ========================= forgotPasswordOtpVerify ===========================
 
 // Handles verify otp
-export async function verifyOtp(req, res) {
+export async function forgotPasswordOtpVerify(req, res) {
   try {
-
     const reqBodyFields = bodyReqFields(req, res, ["email", "otp"]);
     if (reqBodyFields.error) return reqBodyFields.response;
     const { email, otp } = req.body;
 
+    const transaction = await sequelize.transaction();
     // Check if a user with the given email exists
-    const user = await User.findOne({ where: { email: email } });
-    if (!user) return frontError(res, "This email is not registered.", "email")
-    if (user.otp_count >= 3) return validationError(res, "Maximum OTP attempts reached. Please regenerate OTP.");
+    const user = await User.findOne({
+      where: { email: email },
+      lock: transaction.LOCK.UPDATE, // Equivalent to SELECT ... FOR UPDATE
+      attributes: ['uuid', 'canChangePass', 'otp', 'otpAttempt']
+    });
 
-    // Compare OTP if does'nt match increment otp_count
-    if (user.otp !== parseInt(otp, 10)) {
-      await User.update(
-        {
-          otp_count: Sequelize.literal('otp_count + 1'),
-        },
-        { where: { email } },
-      );
-      return validationError(res, 'Invalid OTP');
+    if (!user) {
+      await transaction.rollback();
+      return frontError(res, "User not found. Invalid email.", "email");
+    }
+    if (!user.otp) {
+      await transaction.rollback();
+      return validationError(res, "OTP is not sent to this email. Generate OTP first.");
     }
 
+    if (user.otp !== otp) {
+      user.otpAttempt += 1;
+      if (user.otpAttempt > 2) {
+        user.otp = null;
+        user.otpAttempt = 0;
+        await user.save({ fields: ['otp', 'otpAttempt'], transaction });
+        await transaction.commit();
+        return validationError(res, "Maximum OTP attempts reached. Please regenerate OTP.");
+      } else {
+        await user.save({ fields: ['otpAttempt'], transaction });
+        await transaction.commit();
+        return validationError(res, "Invalid OTP. Please try again.", "otp");
+      }
+    }
     // OTP matched, set can_change_password to true
     await User.update(
-      { can_change_password: true },
+      { canChangePass: true, otp: null, otpAttempt: 0 },
       { where: { email } }
     );
 
@@ -257,10 +414,10 @@ export async function verifyOtp(req, res) {
   }
 }
 
-// ========================= setNewPassword ===========================
+/// ========================= forgotPasswordReset ===========================
 
 // API endpoint to set new password after OTP verification
-export async function setNewPassword(req, res) {
+export async function forgotPasswordReset(req, res) {
   try {
     const reqBodyFields = bodyReqFields(req, res, ["newPassword", "confirmPassword", "email"]);
     if (reqBodyFields.error) return reqBodyFields.response;
@@ -268,7 +425,7 @@ export async function setNewPassword(req, res) {
     const { newPassword, confirmPassword, email } = req.body;
 
     // Check if a user with the given email exists
-    const user = await User.findOne({ where: { email: email } });
+    const user = await User.findOne({ where: { email: email }, attributes: ['uuid', 'canChangePass'] });
     if (!user) {
       return frontError(res, "User with this email does not exist. Invalid email.");
     }
@@ -278,7 +435,7 @@ export async function setNewPassword(req, res) {
     if (invalidPassword) return validationError(res, invalidPassword);
 
     // only allow if can_change_password is true , i.e otp verified
-    if (user.can_change_password === false) {
+    if (user.canChangePass === false) {
       return UnauthorizedError(res, "Unauthorized");
     }
 
@@ -286,14 +443,12 @@ export async function setNewPassword(req, res) {
     const hashedPassword = await hashPassword(newPassword);
 
     // Update user's password in the database
-    await User.update({ password: hashedPassword, can_change_password: false, otp: null, otp_count: 0 }, {
+    await User.update({ password: hashedPassword, canChangePass: false, otp: null, otpAttempt: 0 }, {
       where: { email }
     });
 
     return successOk(res, "Password updated successfully.");
   } catch (error) {
-    catchError(res, error);
+    return catchError(res, error);
   }
 }
-
-// ===================================================================

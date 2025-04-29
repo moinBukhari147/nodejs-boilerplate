@@ -49,6 +49,7 @@ const serviceEmailPass = process.env.EMAIL_PASS;
 
 
 
+
 export {
     nodeEnv,
     port,
@@ -57,5 +58,5 @@ export {
     emailPass,
     domain,
     serviceEmail,
-    serviceEmailPass
+    serviceEmailPass,
 };

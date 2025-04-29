@@ -1,13 +1,14 @@
 import multer from "multer";
 import { resolve } from 'path';
-import { mkdirSync } from 'fs';
+// import { mkdirSync } from 'fs';
+import { mkdir } from 'fs/promises';
 import { diskStorage } from 'multer';
-import { backError } from "../utils/responses";
+import { backError } from "../utils/responses.js";
 
 // Function to create directory if it doesn't exist
-const createDirectoryIfNotExists = (directory) => {
+const createDirectoryIfNotExists = async (directory) => {
     try {
-        mkdirSync(directory, { recursive: true });
+        await mkdir(directory, { recursive: true });
     } catch (error) {
         console.error(`Error creating directory: ${error}`);
         return backError(res, `Error creating directory: ${error}`)
@@ -16,10 +17,10 @@ const createDirectoryIfNotExists = (directory) => {
 
 const storage = diskStorage({
 
-    destination: (req, file, cb) => {
-        const destinationPath = resolve(`${req.storagePath}`);    // ====IMP===== we have to create a middleware for each different path pattrens and Add it before this middleware ====IMP
+    destination: async (req, file, cb) => {
+        const destinationPath = resolve(`${req.storagePath}`);      // ====IMP===== we have to create a middleware for each different path pattrens and Add it before this middleware ====IMP
         // Create directory if it doesn't exist
-        createDirectoryIfNotExists(destinationPath);
+        await createDirectoryIfNotExists(destinationPath);
 
         cb(null, destinationPath);
     },
@@ -32,16 +33,18 @@ const storage = diskStorage({
 // Multer instance for handling file uploads
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
+    limits: { fileSize: 10 * 1024 * 1024 },                         // Limit file size to 10MB
     fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif|webp/i;           // File types for vidoes |mp4|mkv|avi|mov|quicktime
+        const filetypes = /jpeg|jpg|png|gif|webp/i;                 // File types for vidoes |mp4|mkv|avi|mov|quicktime
         const mimetype = filetypes.test(file.mimetype);
 
-        if (mimetype) {
-            return cb(null, true);
-        } else {
-            cb(new Error("Unsupported file format"));
+        if (!mimetype) {
+            const error = new Error("Unsupported file format");
+            error.code = "UNSUPPORTED_FILE_FORMAT";
+            error.field = file.fieldname;
+            return cb(error, false);
         }
+        return cb(null, true);
     }
 });
 
