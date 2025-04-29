@@ -1,14 +1,13 @@
-const jwtAccessExpiration = "30d";
-const jwtRefreshExpiration = "30d";
+import { createVerifier, createSigner } from "fast-jwt";
+
+
 const jwtSecret = process.env.JWT_SECRET_KEY;
 const jwtAlgorithm = ["HS256"];
 
 
-const jwtConfig = {
-    jwtAccessExpiration,
-    jwtRefreshExpiration,
-    jwtSecret,
-    jwtAlgorithm,
-};
+export const jwtAccessExpiration = "30d";
+export const jwtRefreshExpiration = "30d";
 
-export default jwtConfig;
+export const jwtVerifier = createVerifier({ key: jwtSecret, algorithms: jwtAlgorithm });
+export const jwtSigner = createSigner({ key: jwtSecret, algorithms: jwtAlgorithm });
+

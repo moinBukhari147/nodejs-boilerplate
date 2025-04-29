@@ -1,13 +1,11 @@
-import { createVerifier } from "fast-jwt";
 import { UnauthorizedError, forbiddenError } from "../utils/response.util.js";
-import jwtConfig from "../config/jwt.config.js";
 import User from "../models/auth/user.model.js";
+import { jwtVerifier } from "../config/jwt.config.js";
 
-const { jwtSecret, jwtAlgorithm } = jwtConfig;
-const verifier = createVerifier({ key: jwtSecret, algorithms: jwtAlgorithm });
+
 // Middleware to validate JWT tokens
 
-
+// =================== verifyToken ===================
 export const verifyToken = async (req, res, next) => {
   try {
 
@@ -17,7 +15,7 @@ export const verifyToken = async (req, res, next) => {
     const token = authHeader.replace("Bearer ", "");
     if (!token) return UnauthorizedError(res, 'No token, authorization denied');
 
-    const decoded = verifier(token);
+    const decoded = jwtVerifier(token);
     if (decoded.token !== 'access') return UnauthorizedError(res, "Invalid token");
     req.userUid = decoded.userUid;
     next();
@@ -27,7 +25,6 @@ export const verifyToken = async (req, res, next) => {
 }
 
 // =================== verifyRefreshToken ===================
-
 export const verifyRefreshToken = async (req, res, next) => {
   try {
 
@@ -37,7 +34,7 @@ export const verifyRefreshToken = async (req, res, next) => {
     const token = authHeader.replace("Bearer ", "");
     if (!token) return UnauthorizedError(res, 'No token, authorization denied');
 
-    const decoded = verifier(token);
+    const decoded = jwtVerifier(token);
     if (decoded.token !== 'refresh') return UnauthorizedError(res, "Invalid token");
     req.userUid = decoded.userUid;
     next();
@@ -45,6 +42,7 @@ export const verifyRefreshToken = async (req, res, next) => {
     return UnauthorizedError(res, "Invalid token");
   }
 }
+
 
 // =================== VerifyTokenNSetUser ======================
 
