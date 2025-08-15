@@ -8,7 +8,7 @@ A ready-to-use **Express.js boilerplate** designed for rapid development, featur
 
 - 🛡 **Security**
   - Helmet for secure HTTP headers.
-  - Rate limiting via express-rate-limit to prevent brute-force attacks.
+  - Rate limiting via express-rate-limit to prevent brute-force & DDOS attacks.
   - CORS configuration for controlled cross-origin requests.
   - **Database-level locking** to prevent race conditions during sensitive operations (e.g., OTP verification).
   - **Brute-force protection for OTP verification** with attempt limits and cooldowns.
@@ -37,7 +37,7 @@ A ready-to-use **Express.js boilerplate** designed for rapid development, featur
 - ✅ **Request Validation**
   - Integrated validation with express-validator and Joi.
   - Validation function to verify the required fields and extract only the fields to update.
-  - Standard API response structure with semantic function for each response.
+  - Standard API response structure with semantic function for each response that also increases code readability.
 
 - 📡 **Static File Serving**
   - Easily serve static assets via Express middleware.
@@ -127,4 +127,5 @@ src/
     npm run dev
   ```
   
+
 
