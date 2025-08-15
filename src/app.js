@@ -19,6 +19,8 @@ import { nodeEnv, port } from "./config/initial.config.js";
 import { connectDB } from "./config/db.config.js";
 import { getIPAddress } from "./utils/utils.js";
 import "./models/models.js";
+import { catchError } from "./utils/response.util.js";
+
 import authRoutes from "./routes/auth/auth.route.js";
 // import oAuthRoutes from "./routes/auth/oAuth.route.js";
 
@@ -35,14 +37,14 @@ app.use(helmet());
 
 // Enable CORS with default settings
 const crosOptions = {
-  origin: nodeEnv === 'production' ? domain : '*',                                // allow requests from all ips in development, and use array for multiple domains
-  // allowedHeaders: ['Content-Type', 'Authorization', 'x-token', 'y-token'],    // allow these custom headers only
+    origin: nodeEnv === 'production' ? domain : '*',                                // allow requests from all ips in development, and use array for multiple domains
+    // allowedHeaders: ['Content-Type', 'Authorization', 'x-token', 'y-token'],    // allow these custom headers only
 };
 app.use(cors(crosOptions));
 
 // Logger middleware for development environment
 if (nodeEnv !== "production") {
-  app.use(morgan("dev"));
+    app.use(morgan("dev"));
 }
 
 // Compress all routes
@@ -50,8 +52,8 @@ app.use(compression());
 
 // Rate limiting to prevent brute-force attacks
 const limiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
 
@@ -69,7 +71,7 @@ app.use('/static', express.static(path.join(__dirname, '..', 'static')));
 // =========================================
 // Route for root path
 app.get('/', (req, res) => {
-  res.send("Welcome to Boiler plate");
+    res.send("Welcome to Boiler plate");
 });
 
 // Use authentication routes
@@ -84,10 +86,10 @@ app.use("/api/auth", authRoutes);
 // =========================================
 // Global error handler
 app.use((err, req, res, next) => {
-  if (err.code === "UNSUPPORTED_FILE_FORMAT") return validationError(res, err.message, err.field);
-  if (err.code === "LIMIT_FILE_SIZE") return validationError(res, "File size should not be greater than 10MB", err.field);
-  console.error(chalk.red(err.stack));
-  return catchError(res, err);
+    if (err.code === "UNSUPPORTED_FILE_FORMAT") return validationError(res, err.message, err.field);
+    if (err.code === "LIMIT_FILE_SIZE") return validationError(res, "File size should not be greater than 10MB", err.field);
+    console.error(chalk.red(err.stack));
+    return catchError(res, err);
 });
 
 
@@ -98,5 +100,5 @@ connectDB();
 
 // Server running
 app.listen(port, () => {
-  console.log(chalk.bgYellow.bold(` Server is listening at http://${getIPAddress()}:${port} `));
+    console.log(chalk.bgYellow.bold(` Server is listening at http://${getIPAddress()}:${port} `));
 });

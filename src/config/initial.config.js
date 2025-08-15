@@ -42,10 +42,10 @@ const serviceEmail = process.env.EMAIL;
 const serviceEmailPass = process.env.EMAIL_PASS;
 
 // For oAuth login
-// const googleClientId = process.env.GOOGLE_CLIENT_ID;
-// const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-// const facebookClientId = process.env.FACEBOOK_CLIENT_ID;
-// const facebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
+// export const googleClientId = process.env.GOOGLE_CLIENT_ID;
+// export const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+// export const facebookClientId = process.env.FACEBOOK_CLIENT_ID;
+// export const facebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
 
 
 

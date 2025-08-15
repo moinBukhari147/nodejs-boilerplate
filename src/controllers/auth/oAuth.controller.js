@@ -1,9 +1,11 @@
 // UNCOMMENT THE CODE BELOW TO ENABLE OAUTH
 
+// import { catchError, successOkWithData } from "../../utils/response.util.js";
+
 
 // import { successOkWithData, frontError, catchError } from "../../utils/responses.js";
-// import { User } from "../../models/user/user.model.js";
-// import { generateAccessToken, generateRefreshToken } from "../../utils/jwtTokenGenerator.js"
+// import User from "../../models/auth/user.model.js";
+// import { generateAccessToken, generateRefreshToken } from "../../utils/jwt.util.js"
 
 
 // // ====================================================================
@@ -20,8 +22,8 @@
 //         // let user = await User.findOne({ where: { email: email } });
 //         // if (!user) {
 //         //     user = await User.create({
-//         //         first_name: given_name,
-//         //         last_name: family_name,
+//         //         firstName: given_name,
+//         //         lastName: family_name,
 //         //         email: email,
 //         //         password: "AB#123897",     //This has is not generatable
 //         //     });
@@ -49,8 +51,8 @@
 //         // let user = await User.findOne({ where: { email: email } });
 //         // if (!user) {
 //         //     user = await User.create({
-//         //         first_name: name.split(" ")[0] || "no name",
-//         //         last_name: name.split(" ")[1] || null,
+//         //         firstName: name.split(" ")[0] || "no name",
+//         //         lastName: name.split(" ")[1] || null,
 //         //         email: email,
 //         //         password: "AB#123897",
 //         //     });
@@ -95,8 +97,8 @@
 //         // let user = await User.findOne({ where: { email: email } });
 //         // if (!user) {
 //         //     user = await User.create({
-//         //         first_name: given_name,
-//         //         last_name: family_name,
+//         //         firstName: given_name,
+//         //         lastName: family_name,
 //         //         email: email,
 //         //         password: "AB#123897",
 
@@ -137,8 +139,8 @@
 //         // let user = await User.findOne({ where: { email } });
 //         // if (!user) {
 //         //     user = await User.create({
-//         //         first_name: name || "no name",
-//         //         last_name: null,
+//         //         firstName: name || "no name",
+//         //         lastName: null,
 //         //         email: email,
 //         //         password: "AB23#123897",
 //         //     });

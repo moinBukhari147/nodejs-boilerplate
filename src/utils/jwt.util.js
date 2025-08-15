@@ -1,14 +1,14 @@
-import { jwtSigner, jwtAccessExpiration, jwtRefreshExpiration } from "../config/jwt.config.js";
+import { jwtAccSigner, jwtRefrSigner } from "../config/jwt.config.js";
 
 
 // Function to generate access token
 const generateAccessToken = (user) => {
-    return jwtSigner({ userUid: user.uuid, token: 'access' }, { expiresIn: jwtAccessExpiration });
+    return jwtAccSigner({ userUid: user.uuid, token: 'access' });
 };
 
 // Function to generate refresh token
 const generateRefreshToken = (user) => {
-    return jwtSigner({ userUid: user.uuid, token: 'refresh' }, { expiresIn: jwtRefreshExpiration });
+    return jwtRefrSigner({ userUid: user.uuid, token: 'refresh' });
 };
 
 

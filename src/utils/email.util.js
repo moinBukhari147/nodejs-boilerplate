@@ -5,7 +5,6 @@ import { transporter } from "../config/email.config.js";
 export const sendOTPEmail = async (email, otp) => {
     try {
         const mailOptions = {
-            from: 'agoradance.app@gmail.com',
             to: email,
             subject: 'Agora Dance - OTP Verification',
             text: `Your OTP for Agora Dance is ${otp}.`

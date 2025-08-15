@@ -5,16 +5,16 @@
 // const router = express.Router();
 
 
-// // ====================================================================
-// //                           Web Based OAuth
-// // ====================================================================
+// ====================================================================
+//                           Web Based OAuth
+// ====================================================================
 // // LIBRARIES IMPORTS
 // import passport from "passport";
 
 // // CODE IMPORTS
 // import { googleCallback, facebookCallback } from "../../controllers/auth/oAuth.controller.js";
-// import "../strategies/googleStrategy.js";
-// import "../strategies/facebookStategy.js";
+// import "../../strategies/googleStrategy.js";
+// import "../../strategies/fbStrategy.js";
 
 
 
@@ -27,9 +27,9 @@
 // router.get("/fb/redirect", passport.authenticate("facebook", { session: false }), facebookCallback);
 
 
-// // ==========================================================
-// //                        Mobile Based OAuth
-// // ==========================================================
+// ==========================================================
+//                        Mobile Based OAuth
+// ==========================================================
 // // CODE IMPORTS
 // import { googleLogin, fbLogin } from "../../controllers/auth/oAuth.controller.js";
 

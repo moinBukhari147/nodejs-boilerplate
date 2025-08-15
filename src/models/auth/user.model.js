@@ -1,6 +1,5 @@
 import sequelize from '../../config/db.config.js';
 import { DataTypes } from 'sequelize';
-import bcrypt from "bcryptjs"
 
 // Define a schema for the user with email and password fields
 const User = sequelize.define('user', {
@@ -11,17 +10,17 @@ const User = sequelize.define('user', {
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: false,           // Makes this field mandatory
-        unique: true,               // Ensures email addresses are unique in the database
+        allowNull: false,           // This field is mandatory
+        unique: true,               // Email addresses are unique in the database
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false,           // Makes this field mandatory
+        allowNull: false,           // This field is mandatory
     },
-    first_name: {
+    firstName: {
         type: DataTypes.STRING,
     },
-    last_name: {
+    lastName: {
         type: DataTypes.STRING,
     },
     gender: {
@@ -34,18 +33,18 @@ const User = sequelize.define('user', {
         },
     },
     // use for email verification and password reset if needed
-    is_active: {
+    isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
     otp: {
         type: DataTypes.INTEGER,
     },
-    otp_count: {
+    otpCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0
     },
-    can_change_password: {
+    canChangePassword: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
