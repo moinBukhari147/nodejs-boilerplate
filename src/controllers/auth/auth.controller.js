@@ -68,8 +68,8 @@ export async function registerUser(req, res) {
 
 
         const userData = {
-            first_name: firstName,
-            last_name: lastName,
+            firstName,
+            lastName,
             gender,
             email,
             otp: crypto.randomInt(100099, 999990),

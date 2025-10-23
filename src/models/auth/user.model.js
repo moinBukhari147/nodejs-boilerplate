@@ -11,7 +11,7 @@ const User = sequelize.define('user', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,           // This field is mandatory
-        unique: true,               // Email addresses are unique in the database
+        unique: { msg: "Email address already in use." },
     },
     password: {
         type: DataTypes.STRING,
