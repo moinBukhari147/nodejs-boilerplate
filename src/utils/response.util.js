@@ -128,6 +128,16 @@ const notFound = (res, message = 'Resource not found.') => {
     });
 };
 
+// ============================ notFoundRoute ==========================
+
+const notFoundRoute = (res, message = 'Resource not found.') => {
+    return res.status(404).send({
+        success: false,
+        type: "frontend",
+        error: { message },
+    });
+};
+
 // ========================= conflictError ========================
 
 const conflictError = (res, message = 'Conflict. Resource already exists.') => {
@@ -225,6 +235,7 @@ export {
     frontErrorObj,
     forbiddenError,
     notFound,
+    notFoundRoute,
     successOk,
     successOkWithData,
     sequlizeFrontError,

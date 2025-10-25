@@ -3,7 +3,7 @@ import { resolve } from 'path';
 // import { mkdirSync } from 'fs';
 import { mkdir } from 'fs/promises';
 import { diskStorage } from 'multer';
-import { backError } from "../utils/responses.js";
+import { backError } from "../utils/response.util.js";
 
 // Function to create directory if it doesn't exist
 const createDirectoryIfNotExists = async (directory) => {
@@ -31,7 +31,7 @@ const storage = diskStorage({
 });
 
 // Multer instance for handling file uploads
-const upload = multer({
+export const upload = multer({
     storage,
     limits: { fileSize: 10 * 1024 * 1024 },                         // Limit file size to 10MB
     fileFilter: (req, file, cb) => {
@@ -47,5 +47,3 @@ const upload = multer({
         return cb(null, true);
     }
 });
-
-export { upload };

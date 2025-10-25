@@ -31,6 +31,7 @@ const User = sequelize.define('user', {
                 msg: "Gender must be either 'male', 'female', or 'other'."
             }
         },
+        allowNull: true,
     },
     // use for email verification and password reset if needed
     isActive: {

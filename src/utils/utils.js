@@ -102,7 +102,7 @@ export const createDateWithTodayPlusAddDays = (daysToAdd) => {
 // Helper function to get the relative path from the static base path
 export const getRelativePath = (fullPath) => {
     const normalizedPath = fullPath.replace(/\\/g, '/');
-    const index = normalizedPath.indexOf('/static');
+    const index = normalizedPath.indexOf('/public');
     if (index === -1) return '';
     return normalizedPath.substring(index);
 }

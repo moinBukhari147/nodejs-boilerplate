@@ -10,17 +10,18 @@ export const verifyToken = async (req, res, next) => {
     try {
 
         const authHeader = req.header("Authorization");
-        if (!authHeader) return UnauthorizedError(res, 'No token, authorization denied');
+        if (!authHeader) return UnauthorizedError(res, 'No Authorization header provided, authorization denied');
+
 
         const token = authHeader.replace("Bearer ", "");
-        if (!token) return UnauthorizedError(res, 'No token, authorization denied');
+        if (!token) return UnauthorizedError(res, 'No access token provided, authorization denied');
 
         const decoded = jwtVerifier(token);
         if (decoded.token !== 'access') return UnauthorizedError(res, "Invalid token");
         req.userUid = decoded.userUid;
         next();
     } catch (error) {
-        return UnauthorizedError(res, "Invalid token");
+        return UnauthorizedError(res, "Token expired!");
     }
 }
 
@@ -29,17 +30,17 @@ export const verifyRefreshToken = async (req, res, next) => {
     try {
 
         const authHeader = req.header("Authorization");
-        if (!authHeader) return UnauthorizedError(res, 'No token, authorization denied');
+        if (!authHeader) return UnauthorizedError(res, 'No Authorization header provided, authorization denied');
 
         const token = authHeader.replace("Bearer ", "");
-        if (!token) return UnauthorizedError(res, 'No token, authorization denied');
+        if (!token) return UnauthorizedError(res, 'No access token provided, authorization denied');
 
         const decoded = jwtVerifier(token);
         if (decoded.token !== 'refresh') return UnauthorizedError(res, "Invalid token");
         req.userUid = decoded.userUid;
         next();
     } catch (error) {
-        return UnauthorizedError(res, "Invalid token");
+        return UnauthorizedError(res, "Token expired or invalid!");
     }
 }
 

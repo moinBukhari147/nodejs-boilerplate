@@ -19,9 +19,10 @@ import { nodeEnv, port } from "./config/initial.config.js";
 import { connectDB } from "./config/db.config.js";
 import { getIPAddress } from "./utils/utils.js";
 import "./models/models.js";
-import { catchError } from "./utils/response.util.js";
+import { catchError, notFoundRoute, successOk } from "./utils/response.util.js";
 
 import authRoutes from "./routes/auth/auth.route.js";
+import userRoutes from "./routes/auth/user.route.js";
 // import oAuthRoutes from "./routes/auth/oAuth.route.js";
 
 
@@ -64,7 +65,7 @@ app.use(express.json());
 // Convert import.meta.url to a file path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use('/static', express.static(path.join(__dirname, '..', 'static')));
+app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
 // =========================================
 //            Routes
@@ -73,10 +74,16 @@ app.use('/static', express.static(path.join(__dirname, '..', 'static')));
 app.get('/', (req, res) => {
     res.send("Welcome to Boiler plate");
 });
+// Route for health check
+app.get('/health', (req, res) => {
+    successOk(res, "Server is healthy");
+});
+
 
 // Use authentication routes
 app.use("/api/auth", authRoutes);
 // app.use("/api/oauth", oAuthRoutes);      // UNCOMMENT THIS, OAUTH ROUTES,CONTOLLERS AND CONFIGURE TO USE OAUTH
+app.use("/api/user", userRoutes);
 
 // other routes
 
@@ -84,6 +91,11 @@ app.use("/api/auth", authRoutes);
 // =========================================
 //            Global Error Handler
 // =========================================
+// 404 JSON Response for unmatched routes
+app.use((req, res, next) => {
+    console.log("404 Not Found: ", req.originalUrl);
+    return notFoundRoute(res, "Request route not found");
+});
 // Global error handler
 app.use((err, req, res, next) => {
     if (err.code === "UNSUPPORTED_FILE_FORMAT") return validationError(res, err.message, err.field);

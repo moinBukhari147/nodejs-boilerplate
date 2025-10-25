@@ -15,10 +15,6 @@ router.post("/login", authCtrl.loginUser);
 
 router.post("/token-refresh", verifyRefreshToken, authCtrl.regenerateAccessToken);
 
-router.route("/me")
-    .get(verifyToken, authCtrl.getUser)
-    .patch(verifyToken, authCtrl.updateUser);
-
 router.post("/password/update", verifyToken, authCtrl.updatePassword);
 
 router.post("/password/forgot", authCtrl.forgotPassword);
