@@ -104,6 +104,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
     if (err.code === "UNSUPPORTED_FILE_FORMAT") return validationError(res, err.message, err.field);
     if (err.code === "LIMIT_FILE_SIZE") return validationError(res, "File size should not be greater than 10MB", err.field);
+    if (err.code === "LIMIT_UNEXPECTED_FILE") return frontError(res, "This field for images is not correct, use appropriate defined field for sending images", err.field);
     console.error(chalk.red(err.stack));
     return catchError(res, err);
 });
