@@ -12,6 +12,8 @@ A ready-to-use **Express.js boilerplate** designed for rapid development, featur
   - CORS configuration for controlled cross-origin requests.
   - **Database-level locking** to prevent race conditions during sensitive operations (e.g., OTP verification).
   - **Brute-force protection for OTP verification** with attempt limits and cooldowns.
+  - **Built-in authentication and authorization to protect the endpoint.
+  - **Saved from SQL-injection.
 
 - 📦 **Optimized Performance**
   - Response compression with compression.
@@ -31,6 +33,13 @@ A ready-to-use **Express.js boilerplate** designed for rapid development, featur
   - Environment variables using **dotenv**
   - Sample_env file for easy setup.
 
+    
+- ⚙️ **Asynchronous Job Queue**
+  - BullMQ integrated with Redis for managing background tasks and async workflows.
+  - Email sending (e.g., OTPs) offloaded to background jobs for non-blocking request handling.
+  - Automatic retry and failure tracking for job reliability.
+ 
+    
 - 📤 **File Upload Handling**
   - Multer setup for handling file uploads with size and format validation.
 
@@ -127,5 +136,6 @@ src/
     npm run dev
   ```
   
+
 
 
