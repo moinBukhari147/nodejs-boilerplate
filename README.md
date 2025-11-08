@@ -64,6 +64,10 @@ src/
 │── middlewares/      # Authentication & Other middlewares
 │── routes/           # API route definitions
 │── strategies/       # Passport strategies (Google, Facebook) commented
+|—— job/              # Asynchronous job queue setup and management using BullMQ
+    |—— queues/       # Queue definitions — configure BullMQ queues (e.g., emailQueue, otpQueue)
+    |—— producers/    # Producers — add jobs/tasks to queues (e.g., sendEmail, sendOTP)
+    |—— workers/      # Workers — process queued jobs asynchronously in the background
 │── utils/            # Utility functions & built-in helper function and api responses with proper structure
 │── app.js            # Express app entry point
 ```
@@ -72,7 +76,7 @@ src/
 # Setup and Installation
  ## NVM Installation
  - Open the project and navigate to the project directory in the terminal.
- - Install the nvm (Node version manager) and install node with the help of nvm
+ - Install the nvm (Node version manager) and install Node with the help of nvm
    ### For Mac
    ```zsh
      brew update
@@ -136,6 +140,7 @@ src/
     npm run dev
   ```
   
+
 
 
 
