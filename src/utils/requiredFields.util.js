@@ -19,8 +19,13 @@ const queryReqFields = (req, res, field_list) => {
 const bodyReqFields = (req, res, field_list) => {
     let resObj = {};
     for (const field of field_list) {
-        if (req.body[field] === undefined || (typeof (req.body[field]) == 'string' && req.body[field].trim() == '') || req.body[field] == 'null') {
+        if (req.body[field] === undefined ||
+            req.body[field] == 'null' ||
+            (typeof (req.body[field]) == 'string' && req.body[field].trim() == '') ||
+            (Array.isArray(req.body[field]) && req.body[field].length === 0)
+        ) {
             resObj[[field]] = "This field is required.";
+
         }
     }
     if (Object.keys(resObj).length !== 0)

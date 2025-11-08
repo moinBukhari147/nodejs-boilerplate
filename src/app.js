@@ -31,6 +31,7 @@ import userRoutes from "./routes/auth/user.route.js";
 // =========================================
 // Initializing the app
 const app = express();
+app.set('trust proxy', 1); // tells the app that it’s running behind a reverse proxy
 app.use(cookieParser());
 
 // Essential security headers with Helmet
@@ -38,7 +39,10 @@ app.use(helmet());
 
 // Enable CORS with default settings
 const crosOptions = {
-    origin: nodeEnv === 'production' ? domain : '*',                                // allow requests from all ips in development, and use array for multiple domains
+    origin: nodeEnv === 'production'
+        ? [domain, 'https://www.' + domain.replace(/^https?:\/\//, '')]             // allow requests from all ips in development, and use array for multiple domains
+        : '*',
+    credentials: true,
     // allowedHeaders: ['Content-Type', 'Authorization', 'x-token', 'y-token'],    // allow these custom headers only
 };
 app.use(cors(crosOptions));

@@ -55,8 +55,9 @@ export async function registerUser(req, res) {
         }
 
         await User.create(userData)
-        await sendOTPEmail(email, userData.otp);
-        return created(res, "User created successfully")
+        const isEnqueued = await enqueueOTPEmail(email, userData.otp);
+        if (isEnqueued) return created(res, "User created successfully")
+        else return created(res, "User created successfully, but OTP service is temporarily unavailable. Please try login later.");
     } catch (error) {
         return catchWithSequelizeValidationError(res, error);
     }
@@ -144,14 +145,21 @@ export const resendOtp = async (req, res) => {
 
         // Check if a user with the given email exists
         const user = await User.findOne({ where: { email }, attributes: ["uuid", "otp", "otpCount"] });
-        if (!user) {
-            return frontError(res, "User not found. Invalid email.", "email");
-        }
+        if (!user) return frontError(res, "User not found. Invalid email.", "email");
+
+        const otpRateKey = `otp:rate:limit:${email}`;
+        const otpRate = await redisClient.get(otpRateKey);
+        if (otpRate) return tooManyRequestsError(res, "Please wait for 1 minute before requesting a new OTP.");
+        await redisClient.setex(otpRateKey, 60, '1'); // Set key with 1 minute expiry
+
         const otp = crypto.randomInt(100099, 999990);
         // Send OTP email
+        const isEnqueued = await enqueueOTPEmail(email, otp);
+        if (!isEnqueued) return backError(res, "OTP service is temporarily unavailable. Please try again later.");
         await sendOTPEmail(email, otp);
         user.otp = otp;
         user.otpCount = 0;
+
         await user.save({ fields: ['otp', 'otpCount'] });
         return successOk(res, "OTP sent successfully");
     } catch (error) {

@@ -11,3 +11,8 @@ export const transporter = nodemailer.createTransport({
         pass: serviceEmailPass
     }
 });
+
+
+export const WINDOW_MS = 24 * 60 * 60 * 1000; // 1 day
+export const MAX_EMAILS = 500; // Maximum emails allowed per window
+export const REDIS_EMAIL_COUNT_KEY = "email:timestamp"; // Redis key for tracking email timestamps count

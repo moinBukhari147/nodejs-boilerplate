@@ -54,3 +54,15 @@ const User = sequelize.define('user', {
 )
 
 export default User;
+
+// ==========================================
+// Hooks
+// ==========================================
+// User.beforeValidate((user) => {
+//     if (user.firstName) user.firstName = user.firstName.toLowerCase();
+//     if (user.lastName) user.lastName = user.lastName.toLowerCase();
+// });
+
+// User.beforeSave((user) => {
+//     if (user.firstName) user.firstName = user.firstName.toLowerCase();
+// });
