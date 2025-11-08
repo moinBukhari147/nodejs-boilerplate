@@ -12,8 +12,8 @@ A ready-to-use **Express.js boilerplate** designed for rapid development, featur
   - CORS configuration for controlled cross-origin requests.
   - **Database-level locking** to prevent race conditions during sensitive operations (e.g., OTP verification).
   - **Brute-force protection for OTP verification** with attempt limits and cooldowns.
-  - **Built-in authentication and authorization to protect the endpoint.
-  - **Saved from SQL-injection.
+  - Built-in authentication and authorization to protect the endpoint.
+  - Saved from SQL-injection.
 
 - 📦 **Optimized Performance**
   - Response compression with compression.
@@ -136,6 +136,7 @@ src/
     npm run dev
   ```
   
+
 
 
 
